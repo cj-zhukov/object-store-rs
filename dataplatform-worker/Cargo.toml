@@ -1,0 +1,28 @@
+[package]
+name = "dataplatform-worker"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+arrow-json = "54.2.1"
+async_zip = { version = "0.0.17", features = ["full"] }
+aws-config = "1"
+aws-sdk-s3 = "1"
+aws-creds = "0.37"
+aws-smithy-types = "1.2"
+bytes = "1"
+futures = "0.3"
+color-eyre = "0.6"
+datafusion = { version = "46.0.1", features = ["default"] }
+dotenvy = "0.15.7"
+tokio = { version = "1", features= ["full"] }
+tokio-stream = "0.1"
+tokio-util = { version = "0.7", features = ["full"] }
+thiserror = "2"
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["json"] }
+tracing-timing = "0.6"
+
+[dev-dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
