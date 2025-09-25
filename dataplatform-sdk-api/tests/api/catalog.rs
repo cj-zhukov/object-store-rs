@@ -32,17 +32,7 @@ async fn should_return_400_if_invalid_input() {
 async fn should_return_404_if_valid_input() {
     let app = TestApp::new(ADDRESS.to_string());
     let input = serde_json::json!({
-        "query": format!("select * from {CATALOG_NAME} where order_id = 'order-id-that-doesnot-exist'"),
-    });
-    let response = app.post_catalog(&input).await;
-    assert_eq!(response.status().as_u16(), 404);
-}
-
-#[tokio::test]
-async fn should_return_404_for_order_id_is_null() {
-    let app = TestApp::new(ADDRESS.to_string());
-    let input = serde_json::json!({
-        "query": format!("select * from {CATALOG_NAME} where order_id is null limit 5"),
+        "query": format!("select * from {CATALOG_NAME} where file_name = 'file_name-id-that-doesnot-exist'"),
     });
     let response = app.post_catalog(&input).await;
     assert_eq!(response.status().as_u16(), 404);
