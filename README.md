@@ -4,6 +4,8 @@ Objects Store Project is backend & frontend for working with data in AWS S3. Use
 ## Description
 User performs a query using some path. API Gareway triggers Lambda that validates the query. Lambda is responsible for returning back status codes (404, etc). 
 
+![Architecture Schema](schema.jpg)
+
 ## Action
 - select path is used, Lambda performs this query on object_store table and returns back list of files and metadata. 
 - download path is used, Lambda performs the query and saves the result as parquet file (presigned/request_id.parquet). Lambda creates presigned url and returns it to the user. This presigned url will be available somewhere in the future. Lambda triggers ECS Task and pass key (request_id) as environment variable. ECS Task is responsible for coping and zipping data. 
