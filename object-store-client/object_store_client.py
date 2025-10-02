@@ -34,7 +34,16 @@ class ObjectStoreClient:
     
 
     def run(self) -> None:
-        """ObejectStoreClient main interface"""
+        """
+        Main interface for ObjectStoreClient.
+
+        Examples:
+            >>> client = ObjectStoreClient(query="select * from object_store limit 10", path="select")
+            >>> client.run()  # prints a table of results
+
+            >>> client = ObjectStoreClient(query="select * from object_store where file_type = 'foo' limit 10", path="download", output="files.zip")
+            >>> client.run()  # downloads files.zip
+        """
         match self.path.lower():
             case "select":
                 url = f"{URL}/select"
