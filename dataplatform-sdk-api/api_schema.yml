@@ -1,0 +1,146 @@
+openapi: 3.0.3
+info:
+  title: Object Store API
+  description: API for querying and downloading files from the Object Store
+  version: "1.0.0"
+
+servers:
+  - url: https://your-api-gateway-url.com/dev
+
+paths:
+  /alive:
+    get:
+      summary: Health check endpoint
+      description: Returns 200 if the service is alive
+      responses:
+        "200":
+          description: Service is alive
+          content:
+            application/json:
+              schema:
+                type: object
+                example: { status: "alive" }
+
+  /select:
+    post:
+      summary: Query available files
+      description: Returns a list of files that match the query
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  example: "select * from object_store limit 10"
+      responses:
+        "200":
+          description: List of matching files
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/SelectResult"
+
+  /download:
+    post:
+      summary: Download a file
+      description: Returns a presigned URL for file download
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  example: "select * from object_store where file_type = 'foo' limit 10"
+      responses:
+        "200":
+          description: Presigned download URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    example: "https://s3.presigned-url.com/download.zip"
+
+  /catalog:
+    post:
+      summary: Catalog statistics
+      description: Returns aggregated statistics about files
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  example: "select * from object_store_catalog limit 100"
+      responses:
+        "200":
+          description: Catalog stats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CatalogResult"
+
+components:
+  schemas:
+    SelectResult:
+      type: object
+      properties:
+        file_name:
+          type: string
+          nullable: true
+        file_type:
+          type: string
+          nullable: true
+        file_size:
+          type: integer
+          format: int64
+          nullable: true
+        file_path:
+          type: string
+          nullable: true
+        file_url:
+          type: string
+          nullable: true
+        dt:
+          type: string
+          format: date-time
+          nullable: true
+
+    CatalogResult:
+      type: object
+      properties:
+        year:
+          type: string
+          nullable: true
+        file_type:
+          type: string
+          nullable: true
+        cnt_file_type:
+          type: integer
+          format: int64
+          nullable: true
+        sum_file_size:
+          type: integer
+          format: int64
+          nullable: true
