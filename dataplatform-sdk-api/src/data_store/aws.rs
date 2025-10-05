@@ -28,86 +28,40 @@ impl Table {
         let mut stream = df.execute_stream().await?;
         let mut records = vec![];
         while let Some(batch) = stream.next().await.transpose()? {
-            let file_names = batch
-                .column(0)
-                .as_any()
-                .downcast_ref::<StringViewArray>()
-                .expect("Expected a StringViewArray for file_names");
+            let schema = batch.schema();
+            let columns = schema.fields().iter().map(|f| f.name().clone()).collect::<Vec<_>>();
 
-            let file_types = batch
-                .column(1)
-                .as_any()
-                .downcast_ref::<StringViewArray>()
-                .expect("Expected a StringViewArray for file_types");
+            let get_string_col = |name: &str| -> Option<&StringViewArray> {
+                columns
+                    .iter()
+                    .position(|n| n == name)
+                    .map(|i| batch.column(i).as_any().downcast_ref::<StringViewArray>())
+                    .flatten()
+            };
 
-            let file_sizes = batch
-                .column(2)
-                .as_any()
-                .downcast_ref::<Int64Array>()
-                .expect("Expected a Int64Array for file_sizes");
+            let get_int_col = |name: &str| -> Option<&Int64Array> {
+                columns
+                    .iter()
+                    .position(|n| n == name)
+                    .map(|i| batch.column(i).as_any().downcast_ref::<Int64Array>())
+                    .flatten()
+            };
 
-            let file_paths = batch
-                .column(3)
-                .as_any()
-                .downcast_ref::<StringViewArray>()
-                .expect("Expected a StringViewArray for file_paths");
-
-            let file_urls = batch
-                .column(4)
-                .as_any()
-                .downcast_ref::<StringViewArray>()
-                .expect("Expected a StringViewArray for file_urls");
-
-            let dts = batch
-                .column(5)
-                .as_any()
-                .downcast_ref::<StringViewArray>()
-                .expect("Expected a StringViewArray for dts");
+            let file_names = get_string_col("file_name");
+            let file_types = get_string_col("file_type");
+            let file_sizes = get_int_col("file_size");
+            let file_paths = get_string_col("file_path");
+            let file_urls = get_string_col("file_url");
+            let dts = get_string_col("dt");
 
             for i in 0..batch.num_rows() {
-                let file_name = if file_names.is_null(i) {
-                    None
-                } else {
-                    Some(file_names.value(i).to_string())
-                };
-
-                let file_type = if file_types.is_null(i) {
-                    None
-                } else {
-                    Some(file_types.value(i).to_string())
-                };
-
-                let file_size = if file_sizes.is_null(i) {
-                    None
-                } else {
-                    Some(file_sizes.value(i))
-                };
-
-                let file_path = if file_paths.is_null(i) {
-                    None
-                } else {
-                    Some(file_paths.value(i).to_string())
-                };
-
-                let file_url = if file_urls.is_null(i) {
-                    None
-                } else {
-                    Some(file_urls.value(i).to_string())
-                };
-
-                let dt = if dts.is_null(i) {
-                    None
-                } else {
-                    Some(dts.value(i).to_string())
-                };
-
                 records.push(Self {
-                    file_name,
-                    file_type,
-                    file_size,
-                    file_path,
-                    file_url,
-                    dt,
+                    file_name: file_names.and_then(|col| if col.is_null(i) { None } else { Some(col.value(i).to_string()) }),
+                    file_type: file_types.and_then(|col| if col.is_null(i) { None } else { Some(col.value(i).to_string()) }),
+                    file_size: file_sizes.and_then(|col| if col.is_null(i) { None } else { Some(col.value(i)) }),
+                    file_path: file_paths.and_then(|col| if col.is_null(i) { None } else { Some(col.value(i).to_string()) }),
+                    file_url: file_urls.and_then(|col| if col.is_null(i) { None } else { Some(col.value(i).to_string()) }),
+                    dt: dts.and_then(|col| if col.is_null(i) { None } else { Some(col.value(i).to_string()) }),
                 });
             }
         }
