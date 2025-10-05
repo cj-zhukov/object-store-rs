@@ -59,6 +59,14 @@ class ObjectStoreClient:
                 if presigned_url is None:
                     return
                 self._wait_and_download(presigned_url)
+            case "catalog":
+                url = f"{URL}/catalog"
+                res = self._send_request(url)
+                if res is None:
+                    return
+                columns = ["year", "file_type", "cnt_file_type", "sum_file_size"]
+                filtered = [{k: row[k] for k in columns} for row in res]
+                print(tabulate(filtered, headers="keys", tablefmt="grid"))
             case _:
                 raise ValueError(f"Unsupported path: {self.path}")
             
